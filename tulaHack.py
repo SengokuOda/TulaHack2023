@@ -4,18 +4,11 @@ import asyncio
 import asyncpg
 
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text
-from aiogram.dispatcher.filters.state import State, StatesGroup
-
-
-API_TOKEN = '6141861125:AAHlyj848A0dTK8pIjPPwJBm2vTcwWgF5OE'
 
 logging.basicConfig(level=logging.INFO)
 
 cross = surrogates.decode('\u274C')
 check = surrogates.decode('\u2705')
-
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
@@ -25,11 +18,6 @@ kb = [[
     types.KeyboardButton(text="Я орг")
 ],     # any
 ]
-
-class Form(StatesGroup):
-    name_event = State()
-    fio_org = State()
-    address = State()
 
 
 @dp.message_handler(commands=['start'])
@@ -111,7 +99,6 @@ async def process_callback_category(callback_query: types.CallbackQuery):
 
 
 @dp.message_handler(Text(equals="Я ищу"))
-#логика user
 async def if_user(message: types.Message):
     user_id = message.from_user.id
     inline_keyboard = await create_categories_keyboard(user_id=user_id)
@@ -120,67 +107,6 @@ async def if_user(message: types.Message):
 
 @dp.message_handler(Text(equals="Я орг"))
 # логика org
-async def menu_handler(message: types.Message):
-    menu_button = types.KeyboardButton('Меню')
-
-     # добавление кнопки "Меню" в клавиатуру бота
-    main_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    main_keyboard.add(menu_button)
-
-    # отправка сообщения и клавиатуры
-    await message.answer('Выберете дейтсвие', reply_markup=main_keyboard)
-    await Form.name_event.set()
-#https://forms.gle/X6piMrWasofZ51ow8
-
-@dp.message_handler(text='Меню')
-async def create_button(message: types.Message):
-    create_event_button = types.KeyboardButton('Создать мероприятие')
-    helping_buffon = types.KeyboardButton('Внести измнение')
-    main_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    main_keyboard.add(create_event_button)
-    main_keyboard.add(helping_buffon)
-
-    # отправка сообщения и клавиатуры
-    message_text = 'Выберите нужный раздел'
-    await message.answer(message_text, reply_markup=main_keyboard)
-
-@dp.message_handler(text = 'Создать мероприятие')
-async def reg_start(message: types.Message):    
-    await message.answer('Введите название мероприятия')
-    await Form.name_event.set()
-
-@dp.message_handler(state = Form.name_event)
-async def process_name(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['name_event'] = message.text
-
-        await message.answer("ФИО организатора")
-
-        await Form.fio_org.set()
-@dp.message_handler(state = Form.fio_org)
-async def process_fio(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['fio_org'] = message.text
-
-        await message.answer("Введите адрес проведения мероприятия")
-
-        await Form.address.set()
-@dp.message_handler(state=Form.address)
-async def process_address(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['address'] = message.text
-
-        user_data = data['name_event'] + " " + data['fio_org'] + " " + data['address']
-
-        await message.answer("Мероприятие создано")
-
-        await Form.name_event.set()
-# async def menu_handler(message: types.Message):
-#     kb = types.KeyboardButton(text)
-
-
-
-
 @dp.callback_query_handler(text="save")
 async def animation_handler(query: types.CallbackQuery):
     for i in range(0, 110, 10):
