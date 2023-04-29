@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=9b791e7f-8637-4534-a2da-fcaaa9bb443c&lang=ru_RU"></script>
+    <title>Abob Inc.</title>
+  </head>
+  <body>
+    <div id="map" style="width: 100%; height: 80%"></div>
+    <div id="menu">
+      <!-- <div id="filters">
+        <div class="filters__item">
+          <img src="" alt=""> 
+           <span>Всё</span>
+        <div>
+      </div> -->
+      <div id="search">
+        <div id="slide">
+          <div class="slide"></div>
+        </div>
+        <input type="text" placeholder="Поиск места" />
+        <div id="search__list"></div>
+      </div>
+    </div>
+    <script src="./js/functions.js"></script>
+    <script src="./js/script.js"></script>
+    <script>
+      (async function () {
+        const res = await fetch("http://80.78.207.160:8000/ping");
+        const data = await res;
+        console.log(data);
+        // 80.78.207.160:8080
+      })();
+    </script>
+  </body>
+</html>
