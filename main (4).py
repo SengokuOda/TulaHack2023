@@ -3,7 +3,12 @@ import surrogates
 import asyncio
 import asyncpg
 
+from data import connect_to_db, get_categories, get_user_interests, update_user_interest
 from aiogram import Bot, Dispatcher, executor, types
+from aiogram.dispatcher.filters import Text
+
+
+API_TOKEN = '6019862801:AAHv9nqLJdxGFVh8aSw0ZUJMQHBm4Jowamk'
 
 logging.basicConfig(level=logging.INFO)
 
@@ -26,43 +31,9 @@ async def cmd_start(message: types.Message):
     await message.answer("КТО ТЫ?", reply_markup=keyboard)
 
 
-async def connect_to_db():
-    """
-    Асинхронно устанавливает соединение с базой данных.
-    :return: объект подключения к базе данных.
-    """
-    conn = await asyncpg.connect(user='postgres', password='1234',
-                                 database='postgres', host='localhost')
-    return conn
-
-
-async def get_categories():
-    """
-    Асинхронно извлекает категории мероприятий из базы данных.
-    :return: список категорий в формате (id, название).
-    """
-    conn = await connect_to_db()
-    categories = await conn.fetch("SELECT id, name FROM categories")
-    await conn.close()
-    return categories
-
-
-# Обновление статуса категории в БД
-async def update_user_interest(category_id: int, user_id: int, is_interested: bool):
-    conn = await connect_to_db()
-    if not is_interested:
-        await conn.execute("INSERT INTO user_interest (category_id, user_id) VALUES ($1, $2)", category_id, user_id)
-    else:
-        await conn.execute("DELETE FROM user_interest WHERE category_id = $1 AND user_id = $2", category_id, user_id)
-
-
 # Создание inline-клавиатуры с категориями
 async def create_categories_keyboard(user_id: int):
-    """
-    Функция для создания inline-клавиатуры с категориями.
-    :return: inline-клавиатура с категориями и флагами заинтересованности пользователя.
-    """
-    keyboard = types.InlineKeyboardMarkup(row_width=3)
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
     categories = await get_categories()
     user_interests = await get_user_interests(user_id)
     for category in categories:
@@ -72,18 +43,6 @@ async def create_categories_keyboard(user_id: int):
         keyboard.insert(button)
     keyboard.insert(types.InlineKeyboardButton(text="save", callback_data="save"))
     return keyboard
-
-
-# Получение списка категорий, которые интересны пользователю
-async def get_user_interests(user_id: int):
-    """
-    Асинхронно получает список категорий, которые интересны пользователю из базы данных.
-    :param user_id id пользователя
-    :return: список категорий в формате (id, название).
-    """
-    conn = await connect_to_db()
-    rows = await conn.fetch("SELECT category_id FROM user_interest WHERE user_id = $1", user_id)
-    return [row["category_id"] for row in rows]
 
 
 # Обработка нажатия на кнопку
@@ -99,6 +58,7 @@ async def process_callback_category(callback_query: types.CallbackQuery):
 
 
 @dp.message_handler(Text(equals="Я ищу"))
+# логика user
 async def if_user(message: types.Message):
     user_id = message.from_user.id
     inline_keyboard = await create_categories_keyboard(user_id=user_id)
@@ -107,6 +67,10 @@ async def if_user(message: types.Message):
 
 @dp.message_handler(Text(equals="Я орг"))
 # логика org
+async def if_org(message: types.Message):
+    await message.reply("Он орг!")
+
+
 @dp.callback_query_handler(text="save")
 async def animation_handler(query: types.CallbackQuery):
     for i in range(0, 110, 10):
@@ -114,6 +78,26 @@ async def animation_handler(query: types.CallbackQuery):
         if i == 100:
             await query.message.edit_text(text="100%\nИзменения успешно сохранены!")
 
+
+# Обработчик команды /alert
+@dp.message_handler(Text(equals="Я орг"))
+async def alert_cmd_handler(message: types.Message):
+    # Создаем inline клавиатуру
+    keyboard = types.ReplyKeyboardMarkup(row_width=2)
+    keyboard.add(types.KeyboardButton("Создать напоминание", web_app=types.WebAppInfo(url="https://loquacious-sunflower-bac3e6.netlify.app")),
+                 types.KeyboardButton("Редактировать напоминания", callback_data="edit_reminders"))
+    # Отправляем сообщение с inline клавиатурой
+    await bot.send_message(chat_id=message.chat.id,
+                           text="Выберите действие:",
+                           reply_markup=keyboard)
+
+
+@dp.message_handler(content_types="web_app_data") #получаем отправленные данные
+async def answer(webAppMes):
+    a = zaglushk()[0]
+   #print(webAppMes) #вся информация о сообщении
+   #print(webAppMes.chat.id)
+   #print(webAppMes.web_app_data.data) #конкретно то что мы передали в бота
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
