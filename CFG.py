@@ -1,5 +1,5 @@
 user='postgres'
-password='1234'
+password='changeme'
 database='postgres'
-host='localhost'
+host='45.12.238.37' # 5432
 API_TOKEN = '6019862801:AAHv9nqLJdxGFVh8aSw0ZUJMQHBm4Jowamk'

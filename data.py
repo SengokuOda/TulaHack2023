@@ -1,9 +1,10 @@
 import asyncpg
 from datetime import datetime, timedelta
+from CFG import user, password, database, host
 
 async def connect_to_db():
-    conn = await asyncpg.connect(user='postgres', password='1234',
-                                 database='postgres', host='localhost')
+    conn = await asyncpg.connect(user=user, password=password,
+                                 database=database, host=host)
     return conn
 
 
@@ -46,9 +47,12 @@ async def add_reminder(event_id: int, remind_time: datetime, user_id: int):
     try:
         # Подключаемся к базе данных
         conn = await connect_to_db()
-
+        all = await conn.fetch("SELECT * FROM reminders")
+        if (user_id, remind_time) in [(all[i]['user_id'], all[i]['reminder_time']) for i in range(len(all))]:
+            pass
+        else:
         # Создаем новое напоминание в таблице reminders
-        await conn.execute("INSERT INTO reminders (event_id, user_id, reminder_time) VALUES ($1, $2, $3)",
+            await conn.execute("INSERT INTO reminders (event_id, user_id, reminder_time) VALUES ($1, $2, $3)",
                             event_id, user_id, remind_time)
     finally:
         # Закрываем соединение с базой данных
