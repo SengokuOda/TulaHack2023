@@ -9,19 +9,30 @@ const deleteControls = [
   "typeSelector",
 ];
 
-let mer;
+let mer = [
+  {
+    id: 1,
+    event_name: "Событие",
+    description: "dfgsdfgsdgsdfg",
+    price: 200,
+    address: "г. Москва",
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/",
+    start_data: "15.06.2023T14:55",
+    end_date: "15.06.2023T14:55",
+  },
+];
 let categories;
-(async function () {
-  mer = await getEvents("events");
-  categories = await getEvents("categories");
-})();
-setTimeout(() => {
-  ymaps.ready(init);
-}, 300);
+// (async function () {
+//   mer = await getEvents("events");
+//   categories = await getEvents("categories");
+// })();
+setTimeout(() => {}, 300);
 
 const coords = [];
 
 const myMer = [];
+
+ymaps.ready(init);
 
 function init() {
   const geolocationControl = new ymaps.control.GeolocationControl({
